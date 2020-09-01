@@ -131,7 +131,7 @@ def run_script():
                                 'metric_name:solar':z[0]['solar'],
                                 'metric_name:spotprice':z[1]['amount'],
                                 'metric_name:fixedprice':z['fixed_rate']
-                            },separators=(',',':'))
+                            }, separators=(',',':'))
                             print(f"<event><time>{time}</time><source>{a['street']}</source><data>{payload}</data></event>")
                         else:
                             logging.error(f"Date mismatch {z[0]['date']} != {z[1]['date']}")
