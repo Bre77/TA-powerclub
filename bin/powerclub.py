@@ -123,9 +123,19 @@ def run_script():
 
                 if data.get('usage_data'):
                     logging.info(f"Writing metrics of {day.strftime('%Y-%m-%d')} at {a['street']}")
-                    for u in data['usage_data']:
-                        time = int(datetime.strptime(u['date'], '%Y-%m-%dT%H:%M:%S').timestamp())
-                        print(f"<event><time>{time}</time><source>{a['street']}</source><data>{json.dumps({'metric_name:power':u['amount']})}</data></event>")
+                    for z in zip(data['usage_data'],data['spot_price_data']):
+                        if(z[0]['date'] == z[1]['date']):
+                            time = int(datetime.strptime(z[0]['date'], '%Y-%m-%dT%H:%M:%S').timestamp())
+                            payload = json.dumps({
+                                'metric_name:power':z[0]['amount'],
+                                'metric_name:solar':z[0]['solar'],
+                                'metric_name:spotprice':z[1]['amount'],
+                                'metric_name:fixedprice':z['fixed_rate']
+                            },separators=(',',':'))
+                            print(f"<event><time>{time}</time><source>{a['street']}</source><data>{payload}</data></event>")
+                        else:
+                            logging.error(f"Date mismatch {z[0]['date']} != {z[1]['date']}")
+                            break
                     day = daydate+timedelta(days=1)
                     continue
                 else:

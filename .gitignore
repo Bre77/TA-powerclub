@@ -4,3 +4,4 @@ __pycache__/
 
 local/
 bin/test.py
+metadata/local.meta
