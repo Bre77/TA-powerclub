@@ -121,25 +121,38 @@ def run_script():
                 else:
                     data = {}
 
-                if data.get('usage_data'):
+                if data.get('usage_data') and len(data['usage_data']) == 48:
                     logging.info(f"Writing metrics of {day.strftime('%Y-%m-%d')} at {a['street']}")
                     for z in zip(data['usage_data'],data['spot_price_data']):
                         if(z[0]['date'] == z[1]['date']):
+                            #Safe to merge them all
                             time = int(datetime.strptime(z[0]['date'], '%Y-%m-%dT%H:%M:%S').timestamp())
                             payload = json.dumps({
                                 'metric_name:power':z[0]['amount'],
                                 'metric_name:solar':z[0]['solar'],
                                 'metric_name:spotprice':z[1]['amount'],
-                                'metric_name:fixedprice':z['fixed_rate']
+                                'metric_name:fixedprice':data['fixed_rate']
                             }, separators=(',',':'))
                             print(f"<event><time>{time}</time><source>{a['street']}</source><data>{payload}</data></event>")
                         else:
-                            logging.error(f"Date mismatch {z[0]['date']} != {z[1]['date']}")
-                            break
-                    day = daydate+timedelta(days=1)
+                            #Timestamp mismatch, seperate the events
+                            time = int(datetime.strptime(z[0]['date'], '%Y-%m-%dT%H:%M:%S').timestamp())
+                            payload = json.dumps({
+                                'metric_name:power':z[0]['amount'],
+                                'metric_name:solar':z[0]['solar']
+                            }, separators=(',',':'))
+                            print(f"<event><time>{time}</time><source>{a['street']}</source><data>{payload}</data></event>")
+
+                            time = int(datetime.strptime(z[1]['date'], '%Y-%m-%dT%H:%M:%S').timestamp())
+                            payload = json.dumps({
+                                'metric_name:spotprice':z[1]['amount'],
+                                'metric_name:fixedprice':data['fixed_rate']
+                            }, separators=(',',':'))
+                            print(f"<event><time>{time}</time><source>{a['street']}</source><data>{payload}</data></event>")
+                    day = day+timedelta(days=1)
                     continue
                 else:
-                    logging.info(f"No data for {day.strftime('%Y-%m-%d')} at {a['street']}")
+                    logging.info(f"Incomplete data for {day.strftime('%Y-%m-%d')} at {a['street']}")
                     break
             open(checkpointfile, "w").write(day.strftime('%Y-%m-%d'))       
         print("</stream>")

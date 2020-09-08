@@ -1,19 +1,30 @@
-<dashboard>
+<form theme="dark">
   <label>Powerclub Dashboard</label>
+  <fieldset submitButton="false">
+    <input type="time" token="time">
+      <label>Time</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
   <row>
     <panel>
       <chart>
         <search>
-          <query>| mstats sum(power) as Power sum(solar) as Solar avg(spotprice) as price where index=usage span=30m 
-| eval Solar=Solar*-1</query>
-          <earliest>-7d@h</earliest>
-          <latest>now</latest>
+          <query>| mstats earliest(power) as Power earliest(solar) as Solar earliest(spotprice) as Spot earliest(fixedprice) as Fixed where index=usage span=30m 
+| eval Solar=-Solar</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">Kwh</option>
         <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.text">cents</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
@@ -27,7 +38,7 @@
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
-        <option name="charting.chart.overlayFields">RRP</option>
+        <option name="charting.chart.overlayFields">Spot,Fixed</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
@@ -47,4 +58,4 @@
       </chart>
     </panel>
   </row>
-</dashboard>
+</form>
